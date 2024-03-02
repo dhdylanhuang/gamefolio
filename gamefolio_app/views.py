@@ -4,7 +4,6 @@ from django.views import View
 
 from gamefolio_app.models import Game, Review
 
-# Create your views here.
 class IndexView(View):
     def get(self, request):
         game_list = Game.objects.order_by('-views')[:5]
