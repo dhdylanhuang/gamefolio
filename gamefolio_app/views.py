@@ -5,4 +5,4 @@ from django.views import View
 # Create your views here.
 class IndexView(View):
     def get(self, request):
-        return HttpResponse("Home Page")
+         return render(request, 'gamefolio_app/index.html')
