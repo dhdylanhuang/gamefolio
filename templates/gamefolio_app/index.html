@@ -41,7 +41,7 @@
                         <div class="badge bg-primary bg-gradient rounded-pill mb-2">{{ game.genre }}</div>
                         <a class="text-decoration-none link-dark stretched-link" href="#!"><h5 class="card-title mb-3">{{ game.name }}</h5></a>
                         <h3 class="card-title"><strong>{{ game.title }}</strong></h3>
-                        <p class="card-text mb-0">{{ game.description }}</p>
+                        <p class="card-text mb-0">{{ game.description|truncatechars:100 }}</p>
                     </div>
                 </div>
             </div>
