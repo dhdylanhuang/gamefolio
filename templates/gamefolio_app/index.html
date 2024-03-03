@@ -60,31 +60,31 @@
                 </div>
             </div>
         </div>
+        <div class="row gx-5">
         {% for review in reviews %}
-            <div class="row gx-5">
-                <div class="col-lg-4 mb-5">
-                    <div class="card h-100 shadow border-0">
-                        <img class="card-img-top" src={% get_image review.game "720p" %} alt="{{ review.game.title }} thumbnail" />
-                        <div class="card-body p-4">
-                            <div class="badge bg-primary bg-gradient rounded-pill mb-2">{{ review.game.genre }}</div>
-                            <a class="text-decoration-none link-dark stretched-link" href="#!"><h5 class="card-title mb-3">{{ review.game.title }}</h5></a>
-                            <p class="card-text mb-0">{{ review.content|truncatechars:100 }}</p>
-                        </div>
-                        <div class="card-footer p-4 pt-0 bg-transparent border-top-0">
-                            <div class="d-flex align-items-end justify-content-between">
-                                <div class="d-flex align-items-center">
-                                    <img class="rounded-circle me-3 profile-picture small-profile-picture" src="{{ MEDIA_URL}}profile_images/{{ review.author.picture }}" alt="{{ review.author.user}} profile picture" />
-                                    <div class="small">
-                                        <div class="fw-bold">{{ review.author.user}}</div>
-                                        <div class="text-muted">{{ review.datePosted }} &middot; {{ review.likes }} likes</div>
-                                    </div>
+            <div class="col-lg-4 mb-5">
+                <div class="card h-100 shadow border-0">
+                    <img class="card-img-top" src={% get_image review.game "720p" %} alt="{{ review.game.title }} thumbnail" />
+                    <div class="card-body p-4">
+                        <div class="badge bg-primary bg-gradient rounded-pill mb-2">{{ review.game.genre }}</div>
+                        <a class="text-decoration-none link-dark stretched-link" href="#!"><h5 class="card-title mb-3">{{ review.game.title }}</h5></a>
+                        <p class="card-text mb-0">{{ review.content|truncatechars:100 }}</p>
+                    </div>
+                    <div class="card-footer p-4 pt-0 bg-transparent border-top-0">
+                        <div class="d-flex align-items-end justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <img class="rounded-circle me-3 profile-picture small-profile-picture" src="{{ MEDIA_URL}}profile_images/{{ review.author.picture }}" alt="{{ review.author.user}} profile picture" />
+                                <div class="small">
+                                    <div class="fw-bold">{{ review.author.user}}</div>
+                                    <div class="text-muted">{{ review.datePosted }} &middot; {{ review.likes }} likes</div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div> 
+            </div>
         {% endfor %}
+        </div>
     </div>
 </section>
 {% endblock %}
