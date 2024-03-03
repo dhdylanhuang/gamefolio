@@ -79,6 +79,11 @@
   --bs-highlight-bg: #fff3cd;
 }
 
+.small-profile-picture {
+  width: 50px; /* Adjust as needed */
+  height: 50px; /* Adjust as needed */
+}
+
 *,
 *::before,
 *::after {
