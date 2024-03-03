@@ -38,11 +38,8 @@ class Game(models.Model):
     #screenshot_huge    1280 x 720
     #720p               720 x 1280
     #1080p              1080 x 1920
-    
-    #Removed image_type parameter, I could not call it in the template
-    #Picture fixed at cover_big for now
-    def get_image(self):
-        return f"https://images.igdb.com/igdb/image/upload/t_cover_big/{self.pictureId}.jpg"
+    def get_image(self, image_type):
+        return f"https://images.igdb.com/igdb/image/upload/t_{image_type}/{self.pictureId}.jpg"
 
     def __str__(self):
         return self.title
