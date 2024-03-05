@@ -84,6 +84,30 @@
   height: 50px; /* Adjust as needed */
 }
 
+.user-review-link:hover {
+  text-decoration: underline !important;
+}
+
+.game-review-link {
+  text-decoration: none !important;
+  color: black;
+}
+
+.game-review-link:hover {
+  color: #198754 !important;
+  text-decoration: none !important;
+}
+
+.game-review-image:hover {
+  filter: sepia(100%) saturate(300%) brightness(70%) hue-rotate(80deg) !important;
+}
+
+.user-review-image:hover {
+  filter:  brightness(80%) saturate(150%) !important;
+  border: var(--bs-border-width) var(--bs-border-style) var(--bs-border-color) !important;
+  --bs-border-width: 1px;
+}
+
 *,
 *::before,
 *::after {
@@ -896,6 +920,7 @@ progress {
 .gy-5 {
   --bs-gutter-y: 3rem;
 }
+
 
 @media (min-width: 576px) {
   .col-sm {
