@@ -1,4 +1,5 @@
 {% extends 'gamefolio_app/base.html' %}
+{% load staticfiles %}
 {% load tags %}
 
 {% block title_block %}
@@ -16,7 +17,7 @@
                     <p class="lead fw-normal text-white-50 mb-4">Welcome to GameFolio, view and critique trending games, comment and find your community, create your own personal Gamefolio filled with your favourite games.</p>
                 </div>
             </div>
-            <div class="col-xl-5 col-xxl-6 d-none d-xl-block text-center"><img class="img-fluid rounded-3 my-5" src="{{ MEDIA_URL }}homepage.png" alt="homepage image" /></div>
+            <div class="col-xl-5 col-xxl-6 d-none d-xl-block text-center"><img class="img-fluid rounded-3 my-5" src="{% static "images/homepage.png" %}" alt="homepage image" /></div>
         </div>
     </div>
 </header>
