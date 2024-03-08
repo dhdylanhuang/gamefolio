@@ -1,0 +1,28 @@
+{% extends 'gamefolio_app/base.html' %}
+
+{% block title_block %}
+    User Profiles
+{% endblock %}
+
+{% block body_block %}
+    <div>
+        <h1>User Profiles</h1>
+    </div>
+    <div>
+        {% if user_profile_list %}
+            <div>
+                {% for list_user in user_profile_list %}
+                    <div>
+                        <h4>
+                            <a href="{% url 'gamefolio_app:profile' list_user.user.username %}">
+                                {{ list_user.user.username }}
+                            </a>
+                        </h4>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>There are no users present in Gamefolio.</p>
+        {% endif %}
+    </div>
+{% endblock %}
