@@ -14,14 +14,16 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import include, path, reverse
 from django.conf import settings
 from django.conf.urls.static import static
+from registration.backends.simple.views import RegistrationView
 
 from gamefolio_app import views
 
 urlpatterns = [
     path('', views.IndexView.as_view(), name ="index"),
-    path('gamefolio_app/', include('gamefolio_app.urls', namespace='gamefolio_app')),
+    path('gamefolio_app/', include('gamefolio_app.urls', namespace='gamefolio')),
     path('admin/', admin.site.urls),
+    path('accounts/', include('registration.backends.simple.urls')),
 ]+ static (settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
