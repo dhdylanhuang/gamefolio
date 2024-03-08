@@ -18,6 +18,8 @@ class ListEntry(admin.TabularInline):
     classes = ['collapse']
 
 class ListAdmin(admin.ModelAdmin):
+    search_fields=["author", "title"]
+    list_display = ("author","title")
     fieldsets = [
         (
             "List Information",
@@ -32,6 +34,7 @@ class ListAdmin(admin.ModelAdmin):
 class GameAdmin(admin.ModelAdmin):
     list_display = ('title', 'average_rating', 'total_reviews')
     readonly_fields = ('average_rating', 'total_reviews',)
+    search_fields = ['title']
 
     def average_rating(self, obj):
         return obj.average_rating()
@@ -52,9 +55,16 @@ class GameAdmin(admin.ModelAdmin):
     inlines = [ReviewInLine]
 
 class AuthorAdmin(admin.ModelAdmin):
+    ordering =("user__username",)
+    search_fields = ['user__username']
     inlines = (ReviewInLine, ListsInLine)
+
+class ReviewAdmin(admin.ModelAdmin):
+    ordering = ("-likes",)
+    list_display = ("game", "author", "rating", "likes")
+    search_fields= ("game__title", "author__user__username")
 
 admin.site.register(Author, AuthorAdmin)
 admin.site.register(Game, GameAdmin)
-admin.site.register(Review)
+admin.site.register(Review, ReviewAdmin)
 admin.site.register(List, ListAdmin)

@@ -29,6 +29,17 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# Registration config
+
+REGISTRATION_OPEN = True
+
+REGISTRATION_AUTO_LOGIN = True
+
+LOGIN_REDIRECT_URL = 'gamefolio_app:index'
+
+LOGIN_URL = 'auth_login'
+
+
 
 # Application definition
 
@@ -39,7 +50,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'gamefolio_app'
+    'gamefolio_app',
+    'registration',
 ]
 
 MIDDLEWARE = [
