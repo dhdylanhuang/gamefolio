@@ -1,0 +1,14 @@
+{% extends 'gamefolio/base.html' %}
+
+{% block title_block %}
+    Register Profile
+{% endblock %}
+
+{% block body_block %}
+    <h1>Register Profile Here</h1>
+    <form method="post" action="{% url 'gamefolio_app:register_profile' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Create Profile">
+    </form>
+{% endblock %}
