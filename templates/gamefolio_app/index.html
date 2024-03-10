@@ -1,47 +1,106 @@
 {% extends 'gamefolio_app/base.html' %}
 {% load staticfiles %}
+{% load tags %}
 
 {% block title_block %}
-    Authors
+    Home 
 {% endblock %}
 
 {% block body_block %}
+<!-- Header-->
 <header class="bg-dark py-0"> 
     <div class="container px-5">
         <div class="row gx-5 align-items-center justify-content-center">
             <div class="col-lg-8 col-xl-7 col-xxl-6">
                 <div class="my-5 text-center text-xl-start">
-                    <h1 class="display-5 fw-bolder text-white mb-2">GameFolio Users</h1>
+                    <h1 class="display-5 fw-bolder text-white mb-2">GameFolio HomePage</h1>
+                    <p class="lead fw-normal text-white-50 mb-4">Welcome to GameFolio, view and critique trending games, comment and find your community, create your own personal Gamefolio filled with your favourite games.</p>
                 </div>
             </div>
-            <div class="col-xl-5 col-xxl-6 d-none d-xl-block text-center"><img class="header-image-fixed rounded-3 my-5" src="{% static "images/homepage.png" %}" style="width: 250px; height: 250px;" alt="homepage image" /></div>
+            <div class="col-xl-5 col-xxl-6 d-none d-xl-block text-center"><img class="img-fluid rounded-3 my-5" src="{% static "images/homepage.png" %}" style="width: 250px; height: 250px;" alt="homepage image" /></div>
         </div>
     </div>
 </header>
 
-    <div class="container">
-        <div class="row gx-5">
-            {% if authors %}
-                {% for author in authors %}
-                    <div class="col-lg-4 col-md-6 mt-3">  
-                        <div class="card h-100 shadow border-0">
-                            <img class="shadow-sm rounded-circle me-3 img-fluid user-review-image" src="{{ MEDIA_URL }}{{ author.picture }}" alt="{{ author.user.username }} profile picture" style="width: 50px; height: 50px;" />
 
-                            <div class="card-body p-4 d-flex flex-column">
-                                <h5 class="card-title mb-3">
-                                    <a class="text-decoration-none link-dark title-link" href="{% url 'gamefolio_app:profile' author.user.username %}">
-                                        {{ author.user.username }}
-                                    </a>
-                                </h5>
-                                <p>Total Reviews: {{ author.review_set.count }}</p>
-                                <p>Total Likes Received: {{ author.total_likes }}</p>                                <!-- Add more content here if needed -->
+<!-- Top Games-->
+<section class="py-5">
+    <div class="container px-5 my-5">
+        <div class="row gx-5 justify-content-center">
+            <div class="col-lg-8 col-xl-6">
+                <div class="text-center">
+                    <h2 class="fw-bolder">Highest Rated Games of the Day</h2>
+                </div>
+            </div>
+        </div>
+        <div class="row gx-5">
+        {% for game in games %}
+        <div class="col-lg-4 mb-5">
+            <div class="card h-100 shadow border-0"> 
+                <img class="card-img-top game-review-image" src="{% get_image game "720p" %}" alt="{{ game.title }} thumbnail" />
+                <div class="card-body p-4">
+                    <button type="genre" class="btn btn-outline-success">{{ game.genre }}</button>
+                    <h5 class="card-title mb-3">
+
+                    </h5>
+                    <h3 class="card-title mb-3"><a class="game-review-link"><strong>{{ game.title }}</strong></a></h3>
+                    <p class="card-text mb-0">{{ game.description|truncatechars:100 }}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        </div> 
+    </div>
+</section>
+
+
+<!-- Top Reviews-->
+<section class="py-5">
+    <div class="container px-5 my-5">
+        <div class="row gx-5 justify-content-center">
+            <div class="col-lg-8 col-xl-6">
+                <div class="text-center">
+                    <h2 class="fw-bolder">Most Liked Reviews of the Day</h2>
+                </div>
+            </div>
+        </div>
+        <div class="row gx-5 d-flex justify-content-left">
+        {% for review in reviews %}
+            <div class = "col-md-8 col-lg-4 my-3 py-3">
+                <div class = "row d-flex align-items-end">
+                    <div class = "col-md-4">
+                        <a href = "#!">
+                            <img class = "border border-2 border-light shadow-sm img-fluid rounded game-review-image" src={% get_image review.game "cover_big" %} alt="{{ review.game.title }} thumbnail"  />
+                        </a>
+                    </div>
+                    <div class = "col-8">
+                        <div class = "row-2 d-flex align-items-left mt-3">
+                            <div class = "col-2">
+                                <a href = "#!">
+                                    <img class="shadow-sm rounded-circle me-3 img-fluid user-review-image" src="{{ MEDIA_URL}}{{ review.author.picture }}" alt="{{ review.author.user}} profile picture" />
+                                </a>
                             </div>
+                                <div class="col px-2 d-flex align-items-end">
+                                    <a class = "user-review-link text-decoration-none link-dark " href = "#!"><h6 class = "fw-semibold"><small>{{ review.author.user}}</small></h6></a>
+                                </div>
+                            </div>
+                        <div class = "row-2 mt-2">
+                            <h4 class="mb-1 fw-semibold text-truncate"><a class="game-review-link " href="#!">{{ review.game.title }}</a></h4>
+                            <div style = "color: #198754">{{review.get_rating_display}}</div>
                         </div>
                     </div>
-                {% endfor %}
-            {% else %}
-                <p>There are no users present on Rango.</p>
-            {% endif %}
+                </div>
+                <div class = "row mt-3">
+                    <div>{{review.content}}</div>
+                </div>
+                <div class="small row mt-4">
+                    <div class ="col-6 text-muted"> {{ review.datePosted }}  </div>
+                    <div class ="col-4 text-muted text-end"> {{ review.likes }} likes </div>
+                </div>
+                <hr>
+            </div>
+        {% endfor %}
         </div>
     </div>
+</section>
 {% endblock %}
