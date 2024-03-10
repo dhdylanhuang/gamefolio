@@ -1,0 +1,23 @@
+{% extends 'gamefolio_app/base.html' %}
+{% load staticfiles %}
+
+{% block title_block %}
+    Register - Step 2
+{% endblock %}
+
+{% block body_block %}
+
+<h1>Register Here - Step 2</h1> 
+
+<div class="container"> 
+    <div class="row">
+        <form method="post"
+            action="{% url 'gamefolio_app:register_profile' %}" 
+            enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <input type="submit" value="Create Profile" />
+        </form> 
+    </div>
+</div>
+{% endblock %}
