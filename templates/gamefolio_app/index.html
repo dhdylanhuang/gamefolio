@@ -35,17 +35,19 @@
         </div>
         <div class="row gx-5">
         {% for game in games %}
-            <div class="col-lg-4 mb-5">
-                <div class="card h-100 shadow border-0">
-                    <img class="card-img-top" src={% get_image game "720p" %} alt="{{ game.title }} thumbnail" />
-                    <div class="card-body p-4">
-                        <div class="badge bg-primary bg-gradient rounded-pill mb-2">{{ game.genre }}</div>
-                        <a class="text-decoration-none link-dark stretched-link" href="#!"><h5 class="card-title mb-3">{{ game.name }}</h5></a>
-                        <h3 class="card-title"><strong>{{ game.title }}</strong></h3>
-                        <p class="card-text mb-0">{{ game.description|truncatechars:100 }}</p>
-                    </div>
+        <div class="col-lg-4 mb-5 game-hover">
+            <div class="card h-100 shadow border-0"> 
+                <img class="card-img-top game-review-image" src="{% get_image game "720p" %}" alt="{{ game.title }} thumbnail" />
+                <div class="card-body p-4">
+                    <div class="badge bg-primary bg-gradient rounded-pill mb-2">{{ game.genre }}</div>
+                    <h5 class="card-title mb-3">
+                        <a class="text-decoration-none link-dark title-link" href="#!">{{ game.name }}</a>
+                    </h5>
+                    <h3 class="card-title"><strong>{{ game.title }}</strong></h3>
+                    <p class="card-text mb-0">{{ game.description|truncatechars:100 }}</p>
                 </div>
             </div>
+        </div>
         {% endfor %}
         </div> 
     </div>
