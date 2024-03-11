@@ -19,6 +19,20 @@
     </div>
 </header>
 
+<br/>
+
+    <div class="container">
+        <div class="row justify-content-end">
+            <div class="col-md-12">
+                <div class="btn-group" role="group" aria-label="Sort by">
+                    <a href="?sort_by=reviews" class="btn btn-outline-success">Sort by Reviews</a>
+                    <a href="?sort_by=likes" class="btn btn-outline-success">Sort by Likes</a>
+                </div>
+            </div>
+        </div>
+    </div>
+<br/>
+
     <div class="container">
         <div class="row gx-5">
             {% if authors %}
@@ -34,7 +48,7 @@
                                     </a>
                                 </h5>
                                 <p>Total Reviews: {{ author.review_set.count }}</p>
-                                <p>Total Likes Received: {{ author.total_likes }}</p>                                <!-- Add more content here if needed -->
+                                <p>Total Likes Received: {{ author.total_likes }}</p>                               
                             </div>
                         </div>
                     </div>

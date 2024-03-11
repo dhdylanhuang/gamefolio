@@ -79,6 +79,16 @@
                 </div>
             </div>
         </div>
+
+        <br/>
+        <div class="col-lg-4 col-xl-4 text-end">
+            <div class="btn-group" role="group" aria-label="Sort reviews">
+                <a href="?sort_reviews=recent" class="btn btn-outline-success">Sort by Recent</a>
+                <a href="?sort_reviews=liked" class="btn btn-outline-success">Sort by Likes</a>
+            </div>
+        </div>
+        <br/>
+        
         <div class="row gx-5">
             {% if user_reviews %}
                 {% for review in user_reviews %}
