@@ -1,3 +1,4 @@
+from django.db.models import Count, Sum
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.views import View
@@ -98,15 +99,22 @@ class ProfileView(View):
     
 
     @method_decorator(login_required)
+    
     def get(self, request, username):
         try:
             (user, user_profile, form) = self.get_user_details(username)
             user_reviews = Review.objects.filter(author=user_profile)
         except TypeError:
             return redirect(reverse('gamefolio_app:index'))
-        
+
+        sort_reviews_by = request.GET.get('sort_reviews', 'recent')
+
+        if sort_reviews_by == 'liked':
+            user_reviews = user_reviews.annotate(likes_total=Sum('likes')).order_by('-likes_total', '-datePosted')
+        else:
+            user_reviews = user_reviews.order_by('-datePosted')
+
         context_dict = {'user_profile': user_profile, 'selected_user': user, 'form': form, 'user_reviews': user_reviews}
-                
         return render(request, 'gamefolio_app/profile.html', context_dict)
     
     @method_decorator(login_required)
@@ -134,6 +142,13 @@ class ProfileView(View):
 class ListProfilesView(View):
     @method_decorator(login_required)
     def get(self, request):
-        profiles = Author.objects.annotate(total_likes=Sum('review__likes'))
+        sort_by = request.GET.get('sort_by', 'reviews')
+        profiles = Author.objects.annotate(total_reviews=Count('review'), total_likes=Sum('review__likes'))
+        
+        if sort_by == 'likes':
+            profiles = profiles.order_by('-total_likes')
+        else:
+            profiles = profiles.order_by('-total_reviews')
+            
         return render(request,'gamefolio_app/list_profiles.html',{'authors': profiles})
     
