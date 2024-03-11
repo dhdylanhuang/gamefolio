@@ -33,8 +33,8 @@ class IndexView(View):
       
       
 class MyRegistrationView(RegistrationView):
-    def get_success_url(self, user):
-        return reverse('gamefolio_app:register_profile')
+    def get_success_url(self):
+        return reverse('gamefolio_app/profile_registration.html')
     
 
 @method_decorator(login_required, name='dispatch')
@@ -51,7 +51,7 @@ class RegisterProfileView(View):
             user_profile = form.save(commit=False)
             user_profile.user = request.user
             user_profile.save()
-            return redirect(reverse('gamefolio_app:index'))
+            return redirect(reverse('gamefolio_app:profile'))
         else:
             print(form.errors)
 
@@ -73,7 +73,7 @@ class UserLoginView(View):
         if user:
             if user.is_active:
                 login(request, user)
-                return redirect(reverse('gamefolio_app:index'))
+                return redirect(reverse('gamefolio_app:profile'))
             else:
                 return HttpResponse("Your Gamefolio account is disabled")
         else:

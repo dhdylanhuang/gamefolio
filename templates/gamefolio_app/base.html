@@ -25,7 +25,9 @@
     <!-- Sidebar -->
     <div class="bg-dark" style="position: fixed; top: 0; bottom: 0; left: 0; width: 200px; color: white; padding: 20px;">
         <h3>{{ user }}</h3>
+        {% if user.is_authenticated %}
         <img src="{{ MEDIA_URL }}{{ user.author.picture }}" alt="Profile Picture" style="width: 100px; height: 100px;">
+        {% endif %}
         <ul style="list-style: none; padding: 0;">
             <li class="nav-item"><a class="nav-link" href="{% url 'gamefolio_app:index' %}">View My List</a></li>
             <li class="nav-item"><a class="nav-link" href="{% url 'gamefolio_app:index' %}">View Profile</a></li>
