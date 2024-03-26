@@ -1,5 +1,5 @@
 from django.db.models import Count, Sum
-from django.shortcuts import render
+from django.shortcuts import render, render_to_response
 from django.http import HttpResponse
 from django.views import View
 from gamefolio_app.forms import AuthorForm, UserForm
@@ -146,3 +146,8 @@ class ListProfilesView(View):
             
         return render(request,'gamefolio_app/list_profiles.html',{'authors': profiles})
     
+#Helper Functions
+def handler404(request, exception, template_name="gamefolio_app/404.html"):
+    response = render_to_response(template_name)
+    response.status_code = 404
+    return response
