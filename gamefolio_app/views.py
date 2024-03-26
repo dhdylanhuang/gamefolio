@@ -320,3 +320,16 @@ def get_game_ratings(game_id):
                 self.height = 10
                 return
             self.height = (self.count/max_count) * 90 + 10
+            
+    reviews = []
+    max_count = 0
+    for i in range(10):
+        count = Review.objects.filter(game=game_id, rating=i+1).aggregate(Count("rating"))["rating__count"]
+        rating = RatingDistribution(i+1, count)
+        max_count = max(count, max_count)
+        reviews.append(rating)
+
+    for rating in reviews:
+        rating.set_height(max_count)
+
+    return reviews
