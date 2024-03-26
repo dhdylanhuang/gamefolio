@@ -1,7 +1,7 @@
 from datetime import datetime
 from django.db.models import Count, Sum
 from django.shortcuts import get_object_or_404, render, render_to_response
-from django.http import HttpResponse
+from django.http import Http404, HttpResponse
 from django.views import View
 from gamefolio_app.forms import AuthorForm, ReviewForm, UserForm
 from django.contrib.auth import authenticate, login
@@ -211,6 +211,21 @@ class GamePageView(View):
             "review_ratings": get_game_ratings(game_id),
         }
         return render(request, 'gamefolio_app/game.html', context)
+
+class LikeReviewView(View):
+    @method_decorator(login_required)
+    def get(self, request):
+        review_id = request.GET.get('review_id')
+        try:
+            review = Review.objects.get(pk=review_id)
+        except Review.DoesNotExist:
+            return HttpResponse(-1)
+        except ValueError:
+            return HttpResponse(-1)
+        review.likes += 1
+        review.save()
+        
+        return HttpResponse(review.likes)
     
 class SearchView(View):
     def get(self, request):
