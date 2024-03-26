@@ -1,0 +1,128 @@
+{% extends 'gamefolio_app/base.html' %}
+{% load staticfiles %}
+{% load tags %}
+
+{% block title_block %}
+    Search
+{% endblock %}
+
+{% block body_block %}
+{% if query %}
+<div id = "searched">
+{% endif %}
+<div class = "container">
+    <div class = "row justify-content-center">
+        <div class = "col-sm-12 col-md-10 col-lg-8">
+            <form class="pagination-form" action="{% url 'gamefolio_app:search' %}" method = "get" id ="page-form">
+                <button type="submit" class = "d-none"></button> <!-- This button is holding everything together. DO NOT REMOVE -->
+
+                <!-- Result Status and Sort Options -->
+                <div class = "row m-2 justify-content-start">
+                    <div class = "col-sm-12  col-md-6 align-items-center d-flex justify-center">
+                        {% if query and current_genre %}
+                        <h6 class = "py-3 my-0 align-bottom ">Found <bold class = "fw-bold">{{ count }}</bold> results for "{{ query }}" with genre {{current_genre}}</h6>
+                        {% elif query %}
+                        <h6 class = "py-3 my-0 align-bottom ">Found <bold class = "fw-bold">{{ count }}</bold> results for "{{ query }}"</h6>
+                        {% elif current_genre%}
+                        <h6 class = "py-3 my-0  align-bottom ">Showing all <bold class = "fw-bold">{{ count }}</bold>  {{ current_genre }} games</h6>
+                        {% elif results %}
+                        <h6 class = "py-3 my-0  align-bottom ">Showing all <bold class = "fw-bold">{{ count }}</bold> games</h6>
+                        {% else %}
+                        <h6 class = "py-3 my-0  align-bottom "><bold class = "fw-bold">0</bold> results found for "{{ query }}"</h6>
+                        {% endif %}
+                    </div>
+                    <div class ="col-sm-12  col-md-6 d-flex justify-content-end align-items-end">
+                        <!-- Genre Buttons -->
+                        <div class="dropdown mx-2">
+                            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                {% if current_genre %} {{current_genre}} {% else %} Genre {% endif %}
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><button class = "dropdown-item genre-button" type = "submit" value = "REMOVE">None</button></li>
+                                <li><hr class="dropdown-divider"></li>
+                                {% for genre in genres %}
+                                {% if genre.genre == current_genre %}
+                                    <li><button class = "dropdown-item genre-button active" type = "submit" value = "{{ genre.genre }}">{{ genre.genre }}</button></li>
+                                {% else %}
+                                    <li><button class = "dropdown-item genre-button" type = "submit" value = "{{ genre.genre }}">{{ genre.genre }}</button></li>
+                                {% endif %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <!-- Sort Options -->
+                        <div class="dropdown">
+                            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                {{ sort_name }}
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><button class = "dropdown-item sort-option {% if sort_id == 0 %}active{%endif%}" type = "submit" value = "0">Relevance</button></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><button class = "dropdown-item disabled ">Rating</button></li>
+                                <li><button class="dropdown-item sort-option {% if sort_id == "rd" %}active{%endif%}" type = "submit" value = "rd">Highest first</button></li>
+                                <li><button class="dropdown-item sort-option {% if sort_id == "ra" %}active{%endif%}" type = "submit" value = "ra">Lowest first</button></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><button class = "dropdown-item disabled ">Views</button></li>
+                                <li><button class="dropdown-item sort-option {% if sort_id == "vd" %}active{%endif%}" type = "submit" value = "vd">Most viewed first</button></li>
+                                <li><button class="dropdown-item sort-option {% if sort_id == "va" %}active{%endif%}" type = "submit" value = "va">Least viewed first</button></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><button class = "dropdown-item disabled ">Alphabetical</button></li>
+                                <li><button class="dropdown-item sort-option {% if sort_id == "ta" %}active{%endif%}" type = "submit" value = "ta">A-Z</button></li>
+                                <li><button class="dropdown-item sort-option {% if sort_id == "td" %}active{%endif%}" type = "submit" value = "td">Z-A</button></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Results -->
+                {% for result in results %}
+                <div class = "row m-2 justify-content-center">
+                    <div class = "col-2 p-0">
+                        <a  href="{% url "gamefolio_app:game" result.id %}"><img class = "border border-2 border-light shadow-sm img-fluid rounded game-review-image" src={% get_image result "cover_big" %} alt="{{ review.game.title }} thumbnail"  /></a>
+                    </div>
+                    <div class = "col-10">
+                        <h4 class="mb-1 fw-semibold text-truncate py-2"><a class="game-review-link " href="{% url "gamefolio_app:game" result.id %}">{{ result.title }}</a></h4>
+                        <h5 class = "fw-bold"><a data-bs-toggle="tooltip" data-bs-title="{{result.average_rating}}/5.0" class = "text-decoration-none disabled" style = "color: #198754!important">{{ result.average_text_rating }}</a></h5>
+                        <div row>
+                            <button class="btn btn-outline-success genre-button" value = "{{result.genre}}" type = "submit">{{ result.genre }}</button>
+                        </div>
+                    </br>
+                    <p style = "color: #198754;">Total Reviews: {{ result.total_reviews }}</p>
+                    </div>
+                </div>
+                <hr>
+                {% endfor %}
+
+                <!-- Page Numbers -->
+                <ul class="pagination  justify-content-center">
+                    {% if results %}
+                        <!-- Previous Button -->
+                        {% if current_page > 1%}
+                            <li class = "page-item">    
+                                <button class="number-button page-link d-sm-none d-none d-md-block" type = "submit" value = {{ current_page|add:"-1"}}><span aria-hidden="true">&laquo;</span></button>
+                                </a>
+                            </li> 
+                        {% endif %}
+                        <!-- Page Numbers -->
+                        {% for page in pages %}
+                            {% if page == "type" %}
+                                <li class="page-item col-1"><input id="page-search" class="number-button page-link col-12 g-0 justify-content-center" type="input" placeholder="search"></input></li>
+                            {% elif page == current_page %}  
+                                <li class="page-item"><button class="number-button page-link active" type = "submit" value = {{ page }}>{{ page }}</button></li>
+                            {% else %}
+                                <li class="page-item"><button class="number-button page-link d-sm-none d-none d-md-block" type = "submit" value = {{ page }}>{{ page }}</button></li>
+                            {% endif %}
+                        {% endfor %}
+                        <!-- Next Button -->
+                        {% if current_page < page_count %}
+                        <li class = "page-item">    
+                            <button class="number-button page-link d-sm-none d-none d-md-block" type = "submit" value = {{ current_page|add:"1"}}><span aria-hidden="true">&raquo;</span></button>
+                            </a>
+                        </li>
+                        {% endif %}
+                    {% endif %}
+                </ul>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
