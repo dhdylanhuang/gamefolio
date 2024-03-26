@@ -1,15 +1,15 @@
 from django.db.models import Count, Sum
-from django.shortcuts import render, render_to_response
+from django.shortcuts import get_object_or_404, render, render_to_response
 from django.http import HttpResponse
 from django.views import View
-from gamefolio_app.forms import AuthorForm, UserForm
+from gamefolio_app.forms import AuthorForm, ReviewForm, UserForm
 from django.contrib.auth import authenticate, login
 from django.urls import reverse
 from django.shortcuts import redirect
 from django.contrib.auth.views import LogoutView
 from django.urls import reverse_lazy
 from django.contrib.auth.models import User
-from gamefolio_app.models import Author
+from gamefolio_app.models import Author, List, ListEntry
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from gamefolio_app.models import Game, Review
@@ -211,8 +211,112 @@ class GamePageView(View):
         }
         return render(request, 'gamefolio_app/game.html', context)
     
+class SearchView(View):
+    def get(self, request):
+        
+        #Parameters
+        MAX_RESULTS_PER_PAGE = 8
+        SQL_QUERY = f"""
+        SELECT G.id, title, pictureID, genre, avg(rating) AS average
+        FROM gamefolio_app_game G LEFT JOIN gamefolio_app_review R
+            ON G.id == R.game
+        """
+        #We do a LEFT JOIN to include games with 0 reviews
+        
+        #Getting URL parameters
+        params = []
+        try:
+            query = request.GET['query'].strip()
+            if(query != ""):
+                SQL_QUERY += f"WHERE title LIKE %s\n"
+                params.append("%"+query+"%")
+        except Exception as e:
+            query = ""
+        
+        try:
+            page = request.GET['page'].strip()
+        except Exception as e:
+            page = 0
+
+        try:
+            genre = request.GET['genre'].strip()
+            joining_word = "AND" if "LIKE" in SQL_QUERY else "WHERE"
+            SQL_QUERY += f"{joining_word} genre = %s\n"
+            params.append(genre)
+        except Exception as e:
+            genre = ""
+
+        try:
+            sort = request.GET['sort'].strip()
+        except:
+            sort = 0
+
+        #Prevent duplicate results
+        SQL_QUERY += "GROUP BY G.id, title, genre\n"
+
+        #Sorting
+        if sort == "rd":                   #Rating Descending
+            SQL_QUERY += "ORDER BY average DESC"
+        elif sort == "ra":                 #Rating Ascending
+            SQL_QUERY += "ORDER BY average ASC"
+        elif sort ==  "vd":                #Views Descending
+            SQL_QUERY += "ORDER BY G.views DESC"
+        elif sort ==  "va":                #Views Ascending
+            SQL_QUERY += "ORDER BY G.views ASC"
+        elif sort ==  "ta":                #Title Ascending
+            SQL_QUERY += "ORDER BY title ASC"
+        elif sort ==  "td":                #Title Descending
+            SQL_QUERY += "ORDER BY title DESC"
+
+        results = Game.objects.raw( SQL_QUERY, params )
+        result_count = len(results)
+        page_count = result_count/MAX_RESULTS_PER_PAGE
+        if(page_count == int(page_count)):
+            page_count = int(page_count)
+        else:
+            page_count = int(page_count) + 1
+        page_count = max(page_count,1)
+        
+        try:
+            page = int(page)
+            assert(page >= 0)
+            assert(page < page_count)
+        except Exception as e:
+            print(e)
+            raise Http404 
+
+        offset = page * MAX_RESULTS_PER_PAGE
+        actual_results = results[offset:MAX_RESULTS_PER_PAGE+offset]
+        current_page = page + 1
+
+        pages = calculate_pages(page_count, current_page)
+
+        def get_unique_genres():
+            return  Game.objects.values('genre').distinct()
+        genres = get_unique_genres()
+
+        sort_name = {0: "Relevance", "rd": "Rating ▼", "ra": "Rating ▲", "vd": "Views ▼", "va" : "Views ▲", "ta": "Alphabetical ▼", "td": "Alphabetical ▲"}[sort]
+
+        context_dict = {"results" : actual_results, "query" : query, "count": result_count, "pages": pages, "current_page": current_page, "page_count": page_count, "current_genre": genre, "genres": genres, "sort_id": sort, "sort_name": sort_name}
+        return render(request, 'gamefolio_app/search.html', context_dict)
+    
 #Helper Functions
 def handler404(request, exception, template_name="gamefolio_app/404.html"):
     response = render_to_response(template_name)
     response.status_code = 404
     return response
+
+def get_game_ratings(game_id):
+
+    class RatingDistribution():
+
+        def __init__(self, rating, count):
+            self.rating = ["½", "★", "★½","★★", "★★½", "★★★", "★★★½", "★★★★", "★★★★½", "★★★★★"][rating-1]
+            self.count = count
+            self.height = 0
+
+        def set_height(self, max_count):
+            if(max_count == 0):
+                self.height = 10
+                return
+            self.height = (self.count/max_count) * 90 + 10
