@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from gamefolio_app.models import Author
+from gamefolio_app.models import Author, List, Game, Review, ListEntry
 
 class UserForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
@@ -31,12 +31,44 @@ class UserForm(forms.ModelForm):
 class AuthorForm(forms.ModelForm):
     class Meta:
         model = Author
-        fields = ('website', 'picture',)
+        fields = ('website', 'picture', 'bio',)
         widgets = {
             'website': forms.URLInput(attrs={'class': 'form-control'}),
             'picture': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+            'bio': forms.Textarea(attrs={'class': 'form-control', 'rows': '5', 'maxlength': '200'}),
         }
         labels = {
             'website': 'Website',
             'picture': 'Profile Picture',
+            'bio': 'Bio',
         }
+        
+class ReviewForm(forms.ModelForm):
+    class Meta:
+        model = Review
+        fields = ['rating', 'content']
+        widgets = {
+            'rating': forms.Select(choices=Review.RATING_CHOICES, attrs={'class': 'form-control'}),
+            'content': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, "maxlength": 500}),
+        }
+        labels = {
+            'rating': 'Rating',
+            'content': 'Review Content',
+        }
+
+class CreateListForm(forms.ModelForm):
+    games = forms.ModelMultipleChoiceField(queryset=Game.objects.all().order_by('title'), widget=forms.CheckboxSelectMultiple, required = False)
+
+    class Meta:
+        model = List
+        fields = ['title', 'description', 'games']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', "maxlength": 500}),
+        }
+        labels = {
+            'title': 'Title',
+            'description': 'Description',
+            'games': 'Games',
+        }
+
