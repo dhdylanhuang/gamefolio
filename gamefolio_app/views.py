@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.db.models import Count, Sum
 from django.shortcuts import get_object_or_404, render, render_to_response
 from django.http import HttpResponse
@@ -314,6 +315,11 @@ class InlineSuggestionsView(View):
         return return_val
     
 #Helper Functions
+def handler404(request, exception, template_name="gamefolio_app/404.html"):
+    response = render_to_response(template_name)
+    response.status_code = 404
+    return response
+
 def get_game_ratings(game_id):
 
     class RatingDistribution():
