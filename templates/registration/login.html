@@ -1,19 +1,43 @@
 {% extends 'gamefolio_app/base.html' %}
+{% load static %}
+
 {% block title_block %}
     Login
 {% endblock %}
 
 {% block body_block %}
-<h1>Login</h1>
-<form method="post" action=".">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <input type="submit" value="Log In" />
-    <input type="hidden" name="next" value="{{ next }}" />
-</form>
+<header class="bg-dark py-0"> 
+    <div class="container px-5">
+        <div class="row gx-5 align-items-center justify-content-center">
+            <div class="col-lg-8 col-xl-7 col-xxl-6">
+                <div class="my-5 text-center text-xl-start">
+                    <h1 class="display-5 fw-bolder text-white mb-2">Login</h1>
+                    <p class="lead fw-normal text-white-50 mb-4">Welcome to GameFolio, view and critique trending games, comment and find your community, create your own personal Gamefolio filled with your favourite games.</p>
+                </div>
+            </div>
+            <div class="col-xl-5 col-xxl-6 d-none d-xl-block text-center"><img class="img-fluid rounded-3 my-5" src="{% static "images/homepage.png" %}" style="width: 250px; height: 250px;" alt="homepage image" /></div>
+        </div>
+    </div>
+</header>
 
-<p>
-    Not registered?
-    <a href="{% url 'registration_register' %}">Register here!</a>
-</p>
+<br/>
+
+<div class="row gx-5 d-flex justify-content-left">
+    <div class="col-md-6 offset-md-3">
+        <div class="card">
+            <div class="card-body">
+                    <form method="post" action="." enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <button type="submit" class="btn btn-outline-success">Login</button>
+                        <span class="mx-2">
+                            Not registered?
+                            <a href="{% url 'gamefolio_app:registration_register' %}">Register here!</a>
+                        </span>
+                    </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
