@@ -12,5 +12,8 @@ urlpatterns = [
     path('profile/<username>/', views.ProfileView.as_view(), name='profile'),
     path('profiles/', views.ListProfilesView.as_view(), name='list_profiles'),
     
+    path('suggest/', views.InlineSuggestionsView.as_view(), name='suggest'),
+    path('search/', views.SearchView.as_view(), name='search'),
+    
     path('game/<slug:game_id>/', views.GamePageView.as_view(), name="game"),
 ]
