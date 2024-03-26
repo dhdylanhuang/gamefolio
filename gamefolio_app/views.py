@@ -300,15 +300,24 @@ class SearchView(View):
         context_dict = {"results" : actual_results, "query" : query, "count": result_count, "pages": pages, "current_page": current_page, "page_count": page_count, "current_genre": genre, "genres": genres, "sort_id": sort, "sort_name": sort_name}
         return render(request, 'gamefolio_app/search.html', context_dict)
     
-#Helper Functions
-def handler404(request, exception, template_name="gamefolio_app/404.html"):
-    response = render_to_response(template_name)
-    response.status_code = 404
-    return response
+class InlineSuggestionsView(View):
+    def get(self, request):
+        if 'suggestion' in request.GET:
+            suggestion = request.GET['suggestion']
+        else:
+            suggestion = ''
+        game_list = get_games_list(max_results=8, starts_with=suggestion)
 
+        if len(game_list) == 0:
+            game_list = Game.objects.order_by('title')[:8]
+        return_val =  render(request, 'gamefolio_app/games.html', {'games': game_list})
+        return return_val
+    
+#Helper Functions
 def get_game_ratings(game_id):
 
     class RatingDistribution():
+        
 
         def __init__(self, rating, count):
             self.rating = ["½", "★", "★½","★★", "★★½", "★★★", "★★★½", "★★★★", "★★★★½", "★★★★★"][rating-1]
@@ -320,7 +329,7 @@ def get_game_ratings(game_id):
                 self.height = 10
                 return
             self.height = (self.count/max_count) * 90 + 10
-            
+
     reviews = []
     max_count = 0
     for i in range(10):
@@ -333,3 +342,75 @@ def get_game_ratings(game_id):
         rating.set_height(max_count)
 
     return reviews
+
+def visitor_cookie_handler(request):
+    visits = int(get_server_side_cookie(request, 'visits', '1')) 
+    last_visit_cookie = get_server_side_cookie(request,
+                                               'last_visit',
+                                               str(datetime.now()))
+    last_visit_time = datetime.strptime(last_visit_cookie[:-7],
+                                        '%Y-%m-%d %H:%M:%S')
+
+    
+    if (datetime.now() - last_visit_time).seconds > 0:
+        visits = visits + 1
+        request.session['last_visit'] = str(datetime.now())
+    else:
+        request.session['last_visit'] = last_visit_cookie
+
+    request.session['visits'] = visits
+
+def get_server_side_cookie(request, cookie, default_val=None):
+    val = request.session.get(cookie)
+    if not val:
+        val = default_val
+    return val
+
+def get_games_list(max_results=0, starts_with=''):
+    games_list = []
+    if starts_with:
+        games_list = Game.objects.filter(title__startswith=starts_with)
+    if max_results > 0:
+        if len(games_list) > max_results:
+            games_list = games_list[:max_results]
+    
+    return games_list
+
+#Calculates what page buttons we need to show at the bottom
+def calculate_pages(page_count, current_page):
+    pages = []
+    if(page_count <= 5):
+        return [i for i in range(1,int(page_count+1))]
+    else:
+        count = 0
+        for i in range(current_page-1, 1, -1):
+            if(count == 2):
+                break
+            count += 1;
+            pages.append(i)
+        
+        count = 0
+        for i in range(current_page, page_count, 1):
+            if(count == 3):
+                break
+            count += 1;
+            pages.append(i)
+
+        if(1 not in pages):
+            pages.append(1)
+        if(page_count not in pages):
+            pages.append(page_count)
+
+        pages.sort()
+
+        last_page = pages[0]
+        jump_index = -1
+        i = 0
+        for page in pages:
+            if(page-last_page > 1):
+                jump_index = i
+            i+=1
+            last_page = page
+    
+        pages.insert(jump_index, "type")
+        return pages
