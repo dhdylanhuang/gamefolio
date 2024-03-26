@@ -1,0 +1,3 @@
+{% autoescape off %}
+{% verbatim %} { {% endverbatim %}"games": [{% for game in games %}{% verbatim %} { {% endverbatim %}"value": "{{game.title}}", "id": "{{game.id}}" {% verbatim %} } {% endverbatim %}{%if not forloop.last %},{%endif%}{% endfor %}{% verbatim %} ]} {% endverbatim %}
+{% endautoescape %}

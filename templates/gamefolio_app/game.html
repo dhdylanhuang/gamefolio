@@ -1,0 +1,197 @@
+{% extends 'gamefolio_app/base.html' %}
+{% load tags %}
+
+{% block title_block %}
+    {{ game.title }}
+{% endblock %}
+
+{% block body_block %}
+<header class="bg-dark py-0"> 
+    <div class="container px-5">
+        <div class="row gx-5 align-items-center justify-content-center">
+            <div class="col-md-12 col-lg-6">
+                <div class="my-5 text-center text-xl-start">
+                    <h1 class="display-5 fw-bolder text-white mb-2">{{ game.title }}</h1>
+                    <hr class="hr-blurry text-white mt-1 mb-1 mx-1" style="width: 65%">
+                    <div class ="mb-2" style = "color: #198754; font-size: 2em;">{{ game.average_text_rating }}
+                        
+                    <a href = "{% url 'gamefolio_app:search' %}?genre={{game.genre}}"><button type="genre" class="btn btn-outline-success mb-2">{{ game.genre }}</button></a>
+                    </div>
+                    {% if lists_to_add %}
+                    <div>
+                        <input id="game-slug" value = "{{game.id}}" type ="hidden">
+                        <select class="dropdown btn btn-secondary dropdown-toggle mb-2">
+                            {% for list in lists_to_add %}
+                                <option class="list-selection-dropdown dropdown-item" value="{{list.slug}}">{{list.title}}</option>
+                            {%endfor%}
+                        </select>
+                            <button id = "add-to-list-button" class="btn btn-outline-success mb-2" value = "{{lists_to_add.0.slug}}">Add to List</button>
+                    </div>
+                    {%endif%}
+                    <p class="lead fw-normal text-white-50 mb-4">{{ game.description }}</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-12 d-none d-lg-block text-center mb-2">
+                <img class="img-fluid rounded-3 mt-5" src="{% get_image game '720p' %}" style="width: 250px;" alt="{{ game.title }}" />
+                <div class = "row justify-content-center my-2" >
+                    <div class = "px-0 mx-0" style = "width: 250px">
+                        <div class="d-flex px-0 mx-0 align-bottom row" >
+                            <div class="px-0 col-6 d-flex justify-content-start"><p class = "px-0 mx-0 py-0 my-0 text-white-50">Ratings </p></div>
+                            <div class="px-0 col-6 d-flex justify-content-end"><p class = "px-0 mx-0 py-0 my-0 text-white-50">Total: {{game.total_reviews}}</p></div>
+                        </div>
+                        <hr class ="mb-2 mt-1" style="color: white;">
+                        <div class = "row">
+                            <div class = "d-sm-block justify-content-center col-8 d-flex mx-0 ps-2 pe-0">
+                                <div id = "rating-distribution" class = "row mx-1 align-items-end" style = "height: 60px"> 
+                                {% for rating in review_ratings %}
+                                    <div class = "rating-bar" style = "height: {{rating.height}}%" data-bs-toggle="tooltip" data-bs-title="{{rating.count}} {{rating.rating}} reviews"></div>     
+                                {% endfor %}
+                                </div>
+                            </div>
+                            <div class = "d-flex align-items-center justify-content-center col-4 mx-0 px-0" style = "color: #198754; font-size: 2em;" data-bs-toggle="tooltip" data-bs-title="{{game.average_text_rating}}">{{ game.average_rating }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+{% if user.is_authenticated %}
+<section class="pt-2 my-5">
+    <div class="container px-5 my-0">
+        <div class="row gx-5 justify-content-center">
+            <div class="col-lg-8 col-xl-6">
+                <div class="text-center pb-2">
+                    <h3 class="fw-bolder">Leave a review:</h3>
+                </div>
+            </div>
+            <div class="row gx-5 d-flex justify-content-left">
+                <div class="col-md-6 offset-md-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <form method="post" class = "text-center">
+                                {% csrf_token %}
+                                <p><label for="id_rating">Rating:</label>  </p>
+                                <div  id = "rating-input" class = "rating ">
+                                    <div id = "rating-hover" class = "rating rating-hover"></div>
+                                    <div id = "rating-actual" class = "rating rating-actual"></div>
+                                    <input name = "rating" id = "id_rating" style="opacity: 0%; width: 0px !important; min-width: 0px;" value="" required type="input"></input>
+                                </div>
+                                <p><label for="id_content">Review Content:</label> 
+                                <textarea name="content" cols="40" rows="5" class="form-control" required="" id="id_content"></textarea>
+                            </p>
+                            
+                                <button type="submit" class="btn btn-outline-success">Submit Review</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% else %}
+<div class="row gx-5 d-flex justify-content-left my-0">
+    <div class="col-md-6 offset-md-3">
+        <div class="card" style="margin-top: 20px;">
+            <div class="card-body">
+                <div class="text-center">
+                    <p class="fw-bolder">Please <a href="{% url 'auth_login' %}">login</a> to leave a review.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% if user_reviews %}
+<section class="pt-2 my-5" id = "reviews">
+    <div class="container px-5">
+        <div class="row gx-5 justify-content-center">
+            <div class="col-lg-8 col-xl-6">
+                <div class="text-center">
+                    <h2 class="fw-bolder">Your Reviews</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="row gx-5">
+            {% for review in user_reviews %}
+                {% render_review review verbose=False paginate=False%}
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+{% if reviews %}
+<section class="pt-2 my-5" id = "reviews">
+    <div class="container px-5">
+        <div class="row gx-5 justify-content-center">
+            <div class="col-lg-8 col-xl-6">
+                <div class="text-center">
+                    <h2 class="fw-bolder">Reviews</h2>
+                </div>
+            </div>
+        </div>
+        <br/>
+        <div class="row gx-5 justify-content-start">
+            <div class="col-lg-4 col-xl-4 text-end">
+                <div class="btn-group" role="group" aria-label="Sort reviews">
+                    <a href="?sort_reviews=recent#reviews" class="btn {% if stype == "recent" %} btn-success {% else %} btn-outline-success {%endif%}">Sort by Recent</a>
+                    <a href="?sort_reviews=liked#reviews" class="btn {% if stype == "liked" %} btn-success {% else %} btn-outline-success {%endif%}">Sort by Likes</a>
+                    <a href="?sort_reviews=rating#reviews" class="btn {% if stype == "rating" %} btn-success {% else %} btn-outline-success {%endif%}">Sort by Rating</a>
+                </div>
+            </div>
+        </div>
+        <br/>
+
+        <div class="row gx-5">
+            {% for review in reviews %}
+                {% render_review review verbose=False %}
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<form method="get" action="{% url 'gamefolio_app:game' game.id %}" id="pagination-form">
+    <ul class="pagination justify-content-center">
+        <input type="hidden" name="sort_reviews_by" value="{{ sort_reviews_by }}">
+        {% if reviews %}  
+        <nav aria-label="Page navigation example">
+            <ul class="pagination">
+              <li class="page-item">
+                <a class="page-link" aria-label="Previous" id = "prev-review-button">
+                  <span aria-hidden="true">&laquo; Prev</span>
+                </a>
+              </li>
+              <li class="page-item"><a class="page-link" id = "current-review-page">1</a></li>
+              <li class="page-item">
+                <a class="page-link" aria-label="Next" id = "next-review-button">
+                  <span aria-hidden="true">Next &raquo;</span>
+                </a>
+              </li>
+            </ul>
+          </nav>
+        {% endif %}
+    </ul>
+</form>
+
+<section class="pt-2">
+    <div class="container px-5 my-5">
+        <div class="row gx-5 justify-content-center">
+            <div class="col-lg-8 col-xl-6">
+                <div class="text-center pb-3">
+                    <h2 class="fw-bolder">Related Games</h2>
+                </div>
+            </div>
+        </div>
+        <div class="row gx-5">
+            {% for related_game in related_games %}
+                {% render_game_card related_game %}
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+{% endblock %}
