@@ -1,0 +1,63 @@
+{% extends 'gamefolio_app/base.html' %}
+{% load static %}
+{% load tags %}
+
+{% block title_block %}
+    Create List 
+{% endblock %}
+
+{% block body_block %}
+
+<header class="bg-dark py-0"> 
+    <div class="container px-5">
+        <div class="row gx-5 align-items-center justify-content-center">
+            <div class="col-lg-8 col-xl-7 col-xxl-6">
+                <div class="my-5 text-center text-xl-start">
+                    <h1 class="display-5 fw-bolder text-white mb-2">Create A New List</h1>
+                </div>
+            </div>
+            <div class="col-xl-5 col-xxl-6 d-none d-xl-block text-center"><img class="header-image-fixed rounded-3 my-5" src="{% static "images/homepage.png" %}" style="width: 250px; height: 250px;" alt="homepage image" /></div>
+        </div>
+    </div>
+</header>
+
+<br/>
+
+<div>
+    <div class="row d-flex justify-content-left">
+        <div class="col-md-10 offset-md-1">
+            <div class="card">
+                <div class="card-body">
+                    <form id = "list-form" role="form" method="post" action=".">
+                        {% csrf_token %}
+                        {% if title %} 
+                            <input type="text" name="title" class="list-edit-control px-0 mx-0" maxlength="128" required="" id="id_title" value = "{{title}}" readonly>
+                        {% else %}
+                            <h5>Title:</h5>
+                            {{ form.title }}
+                        {% endif %}
+                        <br/>
+                        <h5>Description:</h5>
+                            {{ form.description }}
+                        <br/>
+                        <h5>Select your Games:</h5>
+                        <div class="small row">
+                            <div class ="col-8 text-muted text-end">Don't worry if you forget to add a game, you can always add it later.</div>
+                        </div>
+                        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" id = "list-search-bar" value =>
+                                
+                        <br/>
+                        <div class = "row" id = "list-games">
+                            {% for entry in entries %}
+                                {% render_list_entry entry.game %}
+                            {%endfor%}
+                        </div>
+                        <button type="submit" class="btn btn-outline-success">{% if title %}Save List{%else%}Create List{%endif%}</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
