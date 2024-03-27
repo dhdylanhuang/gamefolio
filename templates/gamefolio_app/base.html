@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 {% load staticfiles %}
+{% load tags %}
 
 <html lang="en">
 <head>
@@ -21,81 +22,77 @@
     <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
 </head>
 
-<body class="d-flex flex-column h-100">
-    <!-- Sidebar -->
-    <div class="bg-dark" style="position: fixed; top: 0; bottom: 0; left: 0; width: 200px; color: white; padding: 20px;">
-        <h3>{{ user }}</h3>
-        {% if user.is_authenticated %}
-        <img src="{{ MEDIA_URL }}{{ user.author.picture }}" alt="Profile Picture" style="width: 100px; height: 100px;">
-        {% endif %}
-        <ul style="list-style: none; padding: 0;">
-            <li class="nav-item"><a class="nav-link" href="{% url 'gamefolio_app:index' %}">View My List</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'gamefolio_app:index' %}">View Profile</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'gamefolio_app:index' %}">Edit Profile</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'gamefolio_app:index' %}">Sign Out</a></li>
-        </ul>
-    </div>
+<!-- Navigation-->
 
-    <!-- Main content -->
-    <div style="margin-left: 200px;">
-
-<body class="d-flex flex-column h-100">
+<body class="d-flex flex-column h-100 flex-wrapper">
     <main class="flex-shrink-0">
-        <!-- Navigation-->
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-            <div class="container px-5">
-                <a class="navbar-brand" href="{% url 'gamefolio_app:index' %}">GameFolio</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                        <li class="nav-item">
-                            <form class="d-flex" action="{% url 'gamefolio_app:search' %}" method = "get" id ="search-form">
-                                <button type="submit" class = "d-none"></button>
-                                <input type="hidden" name="query" value="" id="search-query-parameter"/> 
-                                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" id = "search-bar" value = "{{ query }}">
-                                <button class="btn bg-transparent border-none" style="margin-left: -40px; z-index: 100;" type="hidden" id = "reset-button"><div class = "fw-light d-flex align-items-center text-center">&times;</div></button>
-                                <button class="btn btn-outline-success" type="submit" id = "search-button">Search</button>
-                            </form>
-                        </li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'gamefolio_app:index' %}">Home</a></li>
-                        {% if user.is_authenticated %}
-                        <li class="nav-item"><a class="nav-link" href="{% url 'gamefolio:list_profiles' %}">List Profiles</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'gamefolio_app:profile' user.username %}">Profile</a></li>
-                        <li class="nav-item"><a class="nav-link" href= "{% url 'auth_logout' %}">Logout</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'auth_password_change' %}">Change Password</a></li>
-                        {% else %}
-                        <li class="nav-item"><a class="nav-link" href="{% url 'auth_login' %}">Login</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'gamefolio_app:registration_register' %}">Register</a></li>
-                        {% endif %}
-                    </ul>
+            <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+                <div class="container px-5">
+                    <h4><a class="navbar-brand" href="{% url 'gamefolio_app:index' %}">GameFolio</a></h4>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                            <!-- Search bar -->
+                            <li class="nav-item">
+                                <form class="d-flex" action="{% url 'gamefolio_app:search' %}" method = "get" id ="search-form">
+                                    <button type="submit" class = "d-none"></button>
+                                    <input type="hidden" name="query" value="" id="search-query-parameter"/> 
+                                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" id = "search-bar" value = "{{ query }}">
+                                    <button class="btn bg-transparent border-none" style="margin-left: -40px; z-index: 100;" type="hidden" id = "reset-button"><div class = "fw-light d-flex align-items-center text-center">&times;</div></button>
+                                    <button class="btn btn-outline-success" type="submit" id = "search-button">Search</button>
+                                </form>
+                            </li>
+                            <li class="nav-item"><a class="nav-link" href="{% url 'gamefolio_app:index' %}">Home</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{% url 'gamefolio_app:list_profiles' %}">Users</a></li>
+                            <img class="card-img-top" src="{{ MEDIA_URL }}{{ user.author.picture }}" alt="Profile Picture" style="width: 40px; height: 40px; border-radius: 5px; margin-left: 20px;">
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    {% if user.is_authenticated %}
+                                    Profile
+                                    {% else %}
+                                    Login/Register
+                                    {% endif %}
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="navbarDropdown" id="profileDropdown">
+                                    {% if user.is_authenticated %}
+                                    <li><a class="dropdown-item" href="{% url 'gamefolio_app:profile' user.username %}">My Profile</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'gamefolio_app:lists' %}">Lists</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'auth_password_change' %}">Change Password</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'auth_logout' %}">Logout</a></li>
+                                    {% else %}
+                                    <li><a class="dropdown-item" href="{% url 'gamefolio_app:lists' %}">Lists</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'auth_login' %}">Login</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'gamefolio_app:registration_register' %}">Register</a></li>
+                                    {% endif %}
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
-            </div>
-        </nav>
-        
-        {% block body_block %}
-        <!-- Main Body -->
-        {% endblock %}
+            </nav>
+            
+            {% block body_block %}
+            <!-- Main Body -->
+            {% endblock %}
     </main>
-
-    <br>
-
     <!-- Footer-->
     <footer class="bg-dark py-4 mt-auto">
         <div class="container px-5">
             <div class="row align-items-center justify-content-between flex-column flex-sm-row">
                 <div class="col-auto"><div class="small m-0 text-white">Copyright &copy; GameFolio 2024</div></div>
                 <div class="col-auto">
-                    <a class="link-light small" href="#!">Privacy</a>
-                    <span class="text-white mx-1">&middot;</span>
-                    <a class="link-light small" href="#!">Terms</a>
-                    <span class="text-white mx-1">&middot;</span>
-                    <a class="link-light small" href="#!">Contact</a>
+                    <a id="privacy-button" class="link-light small" href="#!">Privacy</a>
+                        <span class="text-white mx-1">&middot;</span>
+                        <a id="terms-button" class="link-light small" href="#!">Terms</a>
+                        <span class="text-white mx-1">&middot;</span>
+                        <a id="contact-button" class="link-light small" href="#!">Contact</a>
                 </div>
             </div>
         </div>
     </footer>
+
 
     <!-- Bootstrap core JS-->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -116,5 +113,10 @@
     <script src="{% static 'js/gamefolio-ajax.js' %}"></script>
     <!-- Search script -->
     <script src="{% static 'js/search-functionality-scripts.js' %}"></script>
+
+    
+    {% block footer %}
+    {% endblock %}
+
 </body>
 </html>
