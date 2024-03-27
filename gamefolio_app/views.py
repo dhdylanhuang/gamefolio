@@ -3,8 +3,9 @@ from django.db.models import Count, Sum
 from django.shortcuts import get_object_or_404, render, render_to_response
 from django.http import Http404, HttpResponse
 from django.views import View
-from gamefolio_app.forms import AuthorForm, ReviewForm, UserForm
+from gamefolio_app.forms import AuthorForm, CreateListForm, ReviewForm, UserForm
 from django.contrib.auth import authenticate, login
+from django.contrib import messages
 from django.urls import reverse
 from django.shortcuts import redirect
 from django.contrib.auth.views import LogoutView
@@ -146,6 +147,133 @@ class ListProfilesView(View):
             profiles = profiles.order_by('-total_reviews')
             
         return render(request,'gamefolio_app/list_profiles.html',{'authors': profiles})
+
+class ListView(View):
+    def get(self, request, author_username, slug):
+        list_obj = get_object_or_404(List, author__user__username=author_username, slug=slug)
+        list_obj.views += 1
+        list_obj.save()      
+        list_entries = list_obj.listentry_set.all()
+        all_games = Game.objects.all().order_by('title')
+        context = {'list_obj': list_obj, 'list_entries': list_entries, 'all_games': all_games, 'views': request.session['visits']}
+        return render(request, 'gamefolio_app/list.html', context)
+    
+    @method_decorator(login_required)
+    def post(self, request, author_username, slug):
+        list_obj = get_object_or_404(List, author__user__username=author_username, slug=slug)
+        if request.user == list_obj.author.user:
+            game_id = request.POST.get('game')
+            game = get_object_or_404(Game, id=game_id)
+            ListEntry.objects.create(list=list_obj, game=game)
+        return redirect('gamefolio_app:list', author_username=author_username, slug=slug)
+
+class EditListView(View):
+    @method_decorator(login_required)
+    def get(self, request, author_username, slug):
+        list_obj = get_object_or_404(List, author__user__username=author_username, slug=slug)
+        create_list_form = CreateListForm({"title": list_obj.title, "description": list_obj.description})
+        list = ListEntry.objects.all()
+        context_dict = {
+                        'user_list' : list,
+                        'form': create_list_form,
+                        "title": list_obj.title,
+                        "entries": ListEntry.objects.filter(list = list_obj)}
+        
+        return render(request, 'gamefolio_app/create_list.html', context_dict)
+    
+    @method_decorator(login_required)
+    def post(self, request, author_username, slug): 
+        create_list_form = CreateListForm(request.POST)
+        create_list_form.is_valid()
+        if "title" in create_list_form.data.keys():
+            list_obj = get_object_or_404(List, author__user__username=author_username, slug=slug)
+            list_obj.description = create_list_form.data["description"]
+            list_obj.save()
+            listEntries = ListEntry.objects.filter(list = list_obj)
+            try:
+                games = create_list_form.cleaned_data['games']
+            except:
+                games = []
+            for entry in listEntries:
+                if(entry.game not in games):
+                    entry.delete()
+            for game in games:
+                if(len(ListEntry.objects.filter(game=game, list=list_obj))==0):
+                    ListEntry.objects.create(list=list_obj, game=game)
+
+            return redirect('gamefolio_app:profile', username=request.user.username)
+        else:
+            return redirect('gamefolio_app:list_edit', author_username=author_username, slug=slug)
+
+class AddListGame(View):
+    @method_decorator(login_required)
+    def get(self, request):
+        if 'id' in request.GET:
+            id = request.GET['id']
+        else:
+            id = ''
+        game = get_object_or_404(Game, id = id) 
+        context = {'game': game}
+        value = render(request, 'gamefolio_app/list_entry.html', context)
+        return value
+
+class CreateListView(View):
+    @method_decorator(login_required)
+    def get(self, request):
+        create_list_form = CreateListForm()
+        list = ListEntry.objects.all()
+        
+        context_dict = {'create_list_form': create_list_form,
+                        'user_list' : list,
+                        'form': create_list_form,}
+        
+        return render(request, 'gamefolio_app/create_list.html', context_dict)
+    
+    @method_decorator(login_required)
+    def post(self, request):
+        create_list_form = CreateListForm(request.POST)
+        create_list_form.is_valid()
+        if "title" in create_list_form.data.keys():
+            new_list = create_list_form.save(commit=False)
+            new_list.author = request.user.author
+            new_list.save()
+            try:
+                games = create_list_form.cleaned_data['games']
+            except:
+                games = []
+            for game in games:
+                ListEntry.objects.create(list=new_list, game=game)
+            return redirect('gamefolio_app:profile', username=request.user.username)
+        else:
+            lists = List.objects.all()
+            list = ListEntry.objects.all()
+
+            context_dict = {
+                'create_list_form': create_list_form,
+                'all_lists': lists,
+                'user_list': list,
+            }
+
+            return render(request, 'gamefolio_app/create_list.html', context_dict)
+        
+class ListDeleteView(View):
+    def post(self, request, author_username, slug):
+        list_obj = get_object_or_404(List, author__user__username=author_username, slug=slug)
+
+        if request.user == list_obj.author.user:
+            list_obj.delete()
+            messages.success(request, "List deleted successfully.")
+        else:
+            messages.error(request, "You are not authorized to delete this list.")
+        
+        return redirect(reverse('gamefolio_app:profile', kwargs={'username': author_username}))
+    
+class AddToListFormView(View):
+    def get(self, request, slug, game_id):
+        list = get_object_or_404(List, slug = slug, author = request.user.author)
+        game = get_object_or_404(Game, id = game_id)
+        ListEntry.objects.create(list = list, game = game)
+        return redirect("gamefolio_app:game", game_id = game_id)
     
 class GamePageView(View):
     def get(self, request, game_id):
