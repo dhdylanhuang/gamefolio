@@ -275,6 +275,51 @@ class AddToListFormView(View):
         ListEntry.objects.create(list = list, game = game)
         return redirect("gamefolio_app:game", game_id = game_id)
     
+class ListsView(View):
+    def get(self, request):
+
+        MAX_RESULTS_PER_PAGE = 9
+        entries = ListEntry.objects.all().values_list("list")
+        lists = List.objects.filter(id__in=entries).order_by('-views')
+        lists_count = len(lists)
+        
+        try:
+            page = request.GET['page'].strip()
+        except Exception as e:
+            page = 0
+
+        sort_reviews_by = request.GET.get('sort', 'views')
+        
+        if sort_reviews_by == 'views':
+            lists = lists.order_by('-views', 'title')
+        elif sort_reviews_by == 'alphabetical':
+            lists = lists.order_by('title')
+
+        page_count = lists_count/MAX_RESULTS_PER_PAGE
+        
+        if(page_count == int(page_count)):
+            page_count = int(page_count)
+        else:
+            page_count = int(page_count) + 1
+        page_count = max(page_count,1)
+        
+        try:
+            page = int(page)
+            assert(page >= 0)
+            assert(page < page_count)
+        except Exception as e:
+            print(e)
+            raise Http404 
+        
+        offset = page * MAX_RESULTS_PER_PAGE
+        actual_results = lists[offset:MAX_RESULTS_PER_PAGE+offset]
+        current_page = page + 1
+        
+        pages = calculate_pages(page_count, current_page)
+        
+        context_dict = {"lists" : actual_results, "count": lists_count, "pages": pages, "current_page": current_page, "page_count": page_count, "sort_reviews_by": sort_reviews_by}
+        return render(request, 'gamefolio_app/lists.html', context_dict)
+    
 class GamePageView(View):
     def get(self, request, game_id):
         game = get_object_or_404(Game, id=game_id)
