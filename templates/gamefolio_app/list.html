@@ -1,0 +1,80 @@
+{% extends 'gamefolio_app/base.html' %}
+{% load static %}
+{% load tags %}
+
+{% block title_block %}
+    {{ list_obj.title }} - Games List
+{% endblock %}
+
+{% block body_block %}
+<header class="bg-dark pt-4 d-flex justify-content-center"> 
+    <div class="container px-5 mx-5">
+        <div class="row gx-5 align-items-center d-flex justify-content-center">
+            <div class="col-md-8 col-12">
+                <div class="my-4 text-center text-xl-start">
+                    <div class = "row d-flex align-items-end">
+                        <div class = "col">
+                            <div class ="row d-inline">
+                                <h1 class="display-5 d-inline fw-bolder text-white mb-2 pe-0">{{ list_obj.title }}</h1>
+                                
+                                <p class="lead fw-bold text-white-25 mb-4 d-inline px-0 ms-2">{{ list_obj.views }} views</p>
+                            </div>
+                        </div>
+                        <div class ="col d-flex justify-content-start mx-4">
+                            <div class ="row d-flex align-items-end">
+                                <a class = "mx-3 px-0" href = "{% url 'gamefolio_app:profile' list_obj.author.user.username %}"  style = "width: fit-content;"><img class="shadow-sm rounded-circle px-0 mx-0 user-review-image" src="{{MEDIA_URL}}{{ list_obj.author.picture }}" alt="{{ list_obj.author.user}} profile picture" /></a>
+                                <p class="lead fw-normal text-white mx-0 px-0 mb-0 align-text-bottom" style = " width: fit-content;">
+                                    <a class="list-profile-link mb-0" href="{% url 'gamefolio_app:profile' list_obj.author.user.username %}" >{{ list_obj.author.user.username }}</a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    {% if list_obj.description %}
+                    <label class="lead fw-bold text-white-50 mb-0 mt-4 py-0" for="description">Description</label>
+                    <p class="lead fw-normal text-white mb-4" style = "overflow-wrap: break-word;" name = "description">{{ list_obj.description }}</p>
+                    {% endif %}
+                    
+                    {% if user.is_authenticated and user == list_obj.author.user %}
+                    <div class = "row d-flex mt-4">
+                        <form class = "col-3" method="get" action="{% url 'gamefolio_app:list_edit' author_username=list_obj.author.user.username slug=list_obj.slug %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-secondary">Edit List</button>
+                        </form>
+                        <form class = "col-3" method="post" action="{% url 'gamefolio_app:list_delete' author_username=list_obj.author.user.username slug=list_obj.slug %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">Delete List</button>
+                        </form>
+                    </div>
+                    {% endif %}
+                    
+                </div>
+            </div>
+            <div class="col-md-4 d-md-block d-none text-center">
+                <div class = "row d-flex justify-content-end">
+                {% render_list_images list_obj %}
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<section class="py-5">
+    <div class="container px-5 my-2">
+        <div class="row gx-5 justify-content-center">
+            <div class="col-lg-8 col-xl-6">
+                <div class="text-center">
+                    <h2 class="fw-bolder">Games</h2>
+                </div>
+            </div>
+        </div>
+        <hr class ="mb-4">
+        <div class="row gx-5">
+            {% for entry in list_entries %}
+                {% render_game_card entry.game verbose=False%}
+            {% endfor %}
+        </div> 
+    </div>
+</section>
+
+
+{% endblock %}
