@@ -7,7 +7,20 @@
 
 {% block body_block %}
 
-<h1>Register Here - Step 2</h1> 
+<header class="bg-dark py-0"> 
+    <div class="container px-5">
+        <div class="row gx-5 align-items-center justify-content-center">
+            <div class="col-lg-8 col-xl-7 col-xxl-6">
+                <div class="my-5 text-center text-xl-start">
+                    <h1 class="display-5 fw-bolder text-white mb-2">Complete Your Profile</h1>
+                </div>
+            </div>
+            <div class="col-xl-5 col-xxl-6 d-none d-xl-block text-center"><img class="header-image-fixed rounded-3 my-5" src="{% static "images/homepage.png" %}" style="width: 250px; height: 250px;" alt="homepage image" /></div>
+        </div>
+    </div>
+</header>
+
+<br/>
 
 <div class="container"> 
     <div class="row">
@@ -16,7 +29,7 @@
             enctype="multipart/form-data">
             {% csrf_token %}
             {{ form.as_p }}
-            <input type="submit" value="Create Profile" />
+            <input type="submit" class="btn btn-outline-success" value="Create Profile" />
         </form> 
     </div>
 </div>
