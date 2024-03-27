@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-{% load staticfiles %}
+{% load static %}
 {% load tags %}
 
 <html lang="en">
@@ -21,6 +21,30 @@
     <!-- Core theme CSS (includes Bootstrap)-->
     <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
 </head>
+
+
+<!-- ************************** LEGACY ************************************-->
+
+<!-- Sidebar -->
+
+<!-- <body class="d-flex flex-column h-100">
+    <div class="bg-dark"
+        style="position: fixed; top: 0; bottom: 0; left: 0; width: 400px; color: white; padding: 20px;">
+        <h3>{{ user }}</h3>
+        {% if user.is_authenticated %}
+        <img class="card-img-top" src="{{ MEDIA_URL }}{{ user.author.picture }}" alt="Profile Picture">
+        <ul style="list-style: none; padding: 0;">
+            <li class="nav-item"><a class="nav-link" href="{% url 'gamefolio_app:create_list' %}">Create List</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'gamefolio_app:profile' user.username %}">Profile</a>
+            </li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'auth_password_change' %}">Change Password</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'auth_logout' %}">Logout</a></li>
+        </ul>
+        {% endif %}
+    </div>
+</body> -->
+
+<!-- ********************************************************************** -->
 
 <!-- Navigation-->
 
