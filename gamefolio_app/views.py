@@ -20,12 +20,14 @@ from registration.backends.simple.views import RegistrationView
 
 class IndexView(View):
     def get(self, request):
-        game_list = sorted(Game.objects.all(), key = lambda p : p.average_rating())[:5]
+        game_list = Game.objects.annotate(average_ratings=Avg('review__rating')).order_by('-average_ratings')[:4]
         reviews_list = Review.objects.order_by('-likes')[:6]
+        visitor_cookie_handler(request)
         
         context_dict = {}
         context_dict['games'] = game_list
         context_dict['reviews'] = reviews_list
+        context_dict['visits'] = request.session['visits']
         
         return render(request, 'gamefolio_app/index.html', context=context_dict)
       
