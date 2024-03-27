@@ -1,22 +1,25 @@
 from datetime import datetime
-from django.db.models import Count, Sum
-from django.shortcuts import get_object_or_404, render, render_to_response
-from django.http import Http404, HttpResponse
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse, HttpResponseRedirect
 from django.views import View
-from gamefolio_app.forms import AuthorForm, CreateListForm, ReviewForm, UserForm
-from django.contrib.auth import authenticate, login
-from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from django.db.models import Avg, Count, Sum
+from django.shortcuts import render
 from django.urls import reverse
-from django.shortcuts import redirect
 from django.contrib.auth.views import LogoutView
 from django.urls import reverse_lazy
 from django.contrib.auth.models import User
-from gamefolio_app.models import Author, List, ListEntry
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
-from gamefolio_app.models import Game, Review
-from django.db.models import Sum
 from registration.backends.simple.views import RegistrationView
+from django.contrib import messages
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from gamefolio_app.forms import ReviewForm, UserForm , AuthorForm, CreateListForm
+from gamefolio_app.models import Game, Review, Author, List, ListEntry
+from django.core.paginator import Paginator
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from django.shortcuts import render_to_response
+from django.http import Http404 
 
 class IndexView(View):
     def get(self, request):
@@ -32,6 +35,14 @@ class IndexView(View):
         return render(request, 'gamefolio_app/index.html', context=context_dict)
       
 class MyRegistrationView(RegistrationView):
+    def form_invalid(self, form):
+        response = super().form_invalid(form)
+        for field, errors in form.errors.items():
+            field_name = form.fields[field].label
+            for error in errors:
+                messages.error(self.request, f"{field_name}: {error}")
+        return response
+
     def get_success_url(self, user=None):
         return reverse('gamefolio_app:register_profile')
     
@@ -82,43 +93,45 @@ class UserLoginView(View):
 
 @method_decorator(login_required, name='dispatch')
 class UserLogoutView(LogoutView):
-    next_page = reverse_lazy('gamefolio_app:index')
+    next_page = reverse_lazy('gamefolio_app:auth_logout')
     
 class ProfileView(View):
     def get_user_details(self, username):
         try:
             user = User.objects.get(username=username)
+            lists = List.objects.filter(author=user.author)
         except User.DoesNotExist:
             return None
         user_profile = Author.objects.get_or_create(user=user)[0]
-        form = AuthorForm({'website': user_profile.website, 'picture': user_profile.picture})
+        form = AuthorForm({'website': user_profile.website, 'picture': user_profile.picture, 'bio': user_profile.bio})
 
-        return (user, user_profile, form)
-    
-
-    @method_decorator(login_required)
+        return (user, lists, user_profile, form)
     
     def get(self, request, username):
         try:
-            (user, user_profile, form) = self.get_user_details(username)
+            (user, lists, user_profile, form) = self.get_user_details(username)
             user_reviews = Review.objects.filter(author=user_profile)
+            user_reviews = user_reviews.annotate(likes_total=Sum('likes'))
+            user_reviews_count = len(user_reviews)
         except TypeError:
             return redirect(reverse('gamefolio_app:index'))
-
+        
         sort_reviews_by = request.GET.get('sort_reviews', 'recent')
-
+        
         if sort_reviews_by == 'liked':
             user_reviews = user_reviews.annotate(likes_total=Sum('likes')).order_by('-likes_total', '-datePosted')
-        else:
+        elif sort_reviews_by == 'recent':
             user_reviews = user_reviews.order_by('-datePosted')
+        elif sort_reviews_by == 'rating':
+            user_reviews = user_reviews.order_by('-rating')
 
-        context_dict = {'user_profile': user_profile, 'selected_user': user, 'form': form, 'user_reviews': user_reviews}
+        context_dict = {'user_profile': user_profile, 'count':user_reviews_count, 'selected_user': user, 'user_lists':lists,'form': form, 'user_reviews': user_reviews, 'sort_reviews_by': sort_reviews_by}
         return render(request, 'gamefolio_app/profile.html', context_dict)
     
     @method_decorator(login_required)
     def post(self, request, username):
         try:
-            (user, user_profile, form) = self.get_user_details(username)
+            (user, lists, user_profile, form) = self.get_user_details(username)
         except TypeError:
             return redirect(reverse('gamefolio_app:index'))
         
@@ -136,20 +149,50 @@ class ProfileView(View):
         context_dict = {'user_profile': user_profile, 'selected_user': user, 'form': form}
         return render(request, 'gamefolio_app/profile.html', context_dict)
 
-
 class ListProfilesView(View):
-    @method_decorator(login_required)
     def get(self, request):
-        sort_by = request.GET.get('sort_by', 'reviews')
+        MAX_RESULTS_PER_PAGE = 12
         profiles = Author.objects.annotate(total_reviews=Count('review'), total_likes=Sum('review__likes'))
+        profiles_count = len(profiles)
+        sort_by = request.GET.get('sort', default='likes')
         
-        if sort_by == 'likes':
-            profiles = profiles.order_by('-total_likes')
-        else:
+        if sort_by == 'reviews':
             profiles = profiles.order_by('-total_reviews')
+        elif sort_by == "likes":
+            profiles = profiles.order_by('-total_likes')
+        elif sort_by == "alphabetical":
+            profiles = profiles.order_by('user__username')
+                     
+        try:
+            page = request.GET['page'].strip()
+        except Exception as e:
+            page = 0
             
-        return render(request,'gamefolio_app/list_profiles.html',{'authors': profiles})
-
+        page_count = profiles_count/MAX_RESULTS_PER_PAGE
+        
+        if(page_count == int(page_count)):
+            page_count = int(page_count)
+        else:
+            page_count = int(page_count) + 1
+        page_count = max(page_count,1)  
+        
+        try:
+            page = int(page)
+            assert(page >= 0)
+            assert(page < page_count)
+        except Exception as e:
+            print(e)
+            raise Http404  
+        
+        offset = page * MAX_RESULTS_PER_PAGE
+        actual_results = profiles[offset:MAX_RESULTS_PER_PAGE+offset]
+        current_page = page + 1
+        
+        pages = calculate_pages(page_count, current_page)
+        
+        context_dict = {"authors" : actual_results, "count": profiles_count, "pages": pages, "current_page": current_page, "page_count": page_count, "sort_by": sort_by}
+        return render(request, 'gamefolio_app/list_profiles.html', context_dict)
+      
 class ListView(View):
     def get(self, request, author_username, slug):
         list_obj = get_object_or_404(List, author__user__username=author_username, slug=slug)
@@ -270,13 +313,6 @@ class ListDeleteView(View):
         
         return redirect(reverse('gamefolio_app:profile', kwargs={'username': author_username}))
     
-class AddToListFormView(View):
-    def get(self, request, slug, game_id):
-        list = get_object_or_404(List, slug = slug, author = request.user.author)
-        game = get_object_or_404(Game, id = game_id)
-        ListEntry.objects.create(list = list, game = game)
-        return redirect("gamefolio_app:game", game_id = game_id)
-    
 class ListsView(View):
     def get(self, request):
 
@@ -322,6 +358,26 @@ class ListsView(View):
         context_dict = {"lists" : actual_results, "count": lists_count, "pages": pages, "current_page": current_page, "page_count": page_count, "sort_reviews_by": sort_reviews_by}
         return render(request, 'gamefolio_app/lists.html', context_dict)
     
+class InlineSuggestionsView(View):
+    def get(self, request):
+        if 'suggestion' in request.GET:
+            suggestion = request.GET['suggestion']
+        else:
+            suggestion = ''
+        game_list = get_games_list(max_results=8, starts_with=suggestion)
+
+        if len(game_list) == 0:
+            game_list = Game.objects.order_by('title')[:8]
+        return_val =  render(request, 'gamefolio_app/games.html', {'games': game_list})
+        return return_val
+   
+class AddToListFormView(View):
+    def get(self, request, slug, game_id):
+        list = get_object_or_404(List, slug = slug, author = request.user.author)
+        game = get_object_or_404(Game, id = game_id)
+        ListEntry.objects.create(list = list, game = game)
+        return redirect("gamefolio_app:game", game_id = game_id);
+
 class GamePageView(View):
     def get(self, request, game_id):
         game = get_object_or_404(Game, id=game_id)
@@ -387,21 +443,11 @@ class GamePageView(View):
         }
         return render(request, 'gamefolio_app/game.html', context)
 
-class LikeReviewView(View):
-    @method_decorator(login_required)
-    def get(self, request):
-        review_id = request.GET.get('review_id')
-        try:
-            review = Review.objects.get(pk=review_id)
-        except Review.DoesNotExist:
-            return HttpResponse(-1)
-        except ValueError:
-            return HttpResponse(-1)
-        review.likes += 1
-        review.save()
-        
-        return HttpResponse(review.likes)
-    
+def handler404(request, exception, template_name="gamefolio_app/404.html"):
+    response = render_to_response(template_name)
+    response.status_code = 404
+    return response
+
 class SearchView(View):
     def get(self, request):
         
@@ -491,25 +537,23 @@ class SearchView(View):
         context_dict = {"results" : actual_results, "query" : query, "count": result_count, "pages": pages, "current_page": current_page, "page_count": page_count, "current_genre": genre, "genres": genres, "sort_id": sort, "sort_name": sort_name}
         return render(request, 'gamefolio_app/search.html', context_dict)
     
-class InlineSuggestionsView(View):
+class LikeReviewView(View):
+    @method_decorator(login_required)
     def get(self, request):
-        if 'suggestion' in request.GET:
-            suggestion = request.GET['suggestion']
-        else:
-            suggestion = ''
-        game_list = get_games_list(max_results=8, starts_with=suggestion)
+        review_id = request.GET.get('review_id')
+        try:
+            review = Review.objects.get(pk=review_id)
+        except Review.DoesNotExist:
+            return HttpResponse(-1)
+        except ValueError:
+            return HttpResponse(-1)
+        review.likes += 1
+        review.save()
+        
+        return HttpResponse(review.likes)
 
-        if len(game_list) == 0:
-            game_list = Game.objects.order_by('title')[:8]
-        return_val =  render(request, 'gamefolio_app/games.html', {'games': game_list})
-        return return_val
     
 #Helper Functions
-def handler404(request, exception, template_name="gamefolio_app/404.html"):
-    response = render_to_response(template_name)
-    response.status_code = 404
-    return response
-
 def get_game_ratings(game_id):
 
     class RatingDistribution():
@@ -610,3 +654,4 @@ def calculate_pages(page_count, current_page):
     
         pages.insert(jump_index, "type")
         return pages
+
