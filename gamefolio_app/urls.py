@@ -7,8 +7,8 @@ urlpatterns = [
     path('', views.IndexView.as_view(), name='index'),
     
     path('accounts/register/', views.MyRegistrationView.as_view(), name='registration_register'),
-    path('register_profile/', views.RegisterProfileView.as_view(), name='register_profile'),  # Corrected line
-
+    path('register_profile/', views.RegisterProfileView.as_view(), name='register_profile'),  
+    
     path('profile/<username>/', views.ProfileView.as_view(), name='profile'),
     path('profiles/', views.ListProfilesView.as_view(), name='list_profiles'),
     
@@ -24,4 +24,7 @@ urlpatterns = [
     
     path('game/<slug:game_id>/', views.GamePageView.as_view(), name="game"),
     path('like_review/', views.LikeReviewView.as_view(), name='like_review'),
+
+    path('add_to_list_form/<slug:slug>/<slug:game_id>/', views.AddToListFormView.as_view(), name='add_to_list_form'),
 ]
+
