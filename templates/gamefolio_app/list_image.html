@@ -1,0 +1,12 @@
+{%load tags%}
+{% load static %}
+<a href="{% url 'gamefolio_app:list' list.author.user.username list.slug %}">
+<div class = "game-review-image px-0 mx-0 row mb-3 list-game-cover" >
+{% for entry in entries%}
+    <img class = "list-game-image" style = "width:{% if entries|length == 1 %}100%{% else %} 50%{%endif%} !important;" src="{% get_image entry.game "1080p" %}">
+{%endfor%}
+{% if not entries %}
+    <img class = "list-game-image" style = "width:100% !important" src="{%static "images/nogames.png" %}">
+{% endif %}
+</div>
+</a>
