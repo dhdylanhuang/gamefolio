@@ -21,41 +21,83 @@
 
 <br/>
 
-    <div class="container">
-        <div class="row justify-content-end">
-            <div class="col-md-12">
-                <div class="btn-group" role="group" aria-label="Sort by">
-                    <a href="?sort_by=reviews" class="btn btn-outline-success">Sort by Reviews</a>
-                    <a href="?sort_by=likes" class="btn btn-outline-success">Sort by Likes</a>
-                </div>
+<div class="container">
+    <div class="row mx-5 justify-content-end">
+        <div class="col-md-12">
+            <div class="btn-group" role="group" aria-label="Sort by">
+                <a href="?sort=likes" class="btn {% if sort_by == "likes" %} btn-success {% else %} btn-outline-success {%endif%}">Sort by Likes</a>
+                <a href="?sort=reviews" class="btn {% if sort_by == "reviews" %} btn-success {% else %} btn-outline-success {%endif%}">Sort by Reviews</a>
+                <a href="?sort=alphabetical" class="btn {% if sort_by == "alphabetical" %} btn-success {% else %} btn-outline-success {%endif%}">Sort from A-Z</a>
             </div>
         </div>
     </div>
+</div>
 <br/>
 
-    <div class="container">
-        <div class="row gx-5">
-            {% if authors %}
-                {% for author in authors %}
-                    <div class="col-lg-4 col-md-6 mt-3">  
-                        <div class="card h-100 shadow border-0">
-                            <img class="shadow-sm rounded-circle me-3 img-fluid user-review-image" src="{{ MEDIA_URL }}{{ author.picture }}" alt="{{ author.user.username }} profile picture" style="width: 50px; height: 50px;" />
-
-                            <div class="card-body p-4 d-flex flex-column">
-                                <h5 class="card-title mb-3">
-                                    <a class="text-decoration-none link-dark title-link" href="{% url 'gamefolio_app:profile' author.user.username %}">
-                                        {{ author.user.username }}
-                                    </a>
-                                </h5>
-                                <p>Total Reviews: {{ author.review_set.count }}</p>
-                                <p>Total Likes Received: {{ author.total_likes }}</p>                               
-                            </div>
+<div class="container">
+    <div class="row gx-5 d-flex justify-content-center">
+        {% if authors %}
+            {% for author in authors %}
+            <div class = "card shadow border-0 col-md-12 col-lg-6 col-xl-3 my-3 py-3 mx-5">
+                <div class = "row d-flex align-items-end">
+                    <div class = "col-md-4 d-flex align-items-start">
+                        <a href="{% url 'gamefolio_app:profile' author.user.username %}">
+                            <img class="shadow-sm rounded me-3 user-profile-image" src="{{ MEDIA_URL }}{{ author.picture }}" alt="{{ author.user.username }} profile picture" style = "
+                            max-width: 100% !important;
+                            max-height: 100% !important;;"/>
+                        </a>
+                    </div>
+                    <div class = "col-8">
+                        <div class = "row-2 mt-2">    
+                            <h5 class="mb-1 fw-semibold"><a class="game-review-link " href="{% url 'gamefolio_app:profile' author.user.username %}">{{ author.user.username  }}</a></h5>
                         </div>
                     </div>
-                {% endfor %}
-            {% else %}
-                <p>There are no users present on Rango.</p>
-            {% endif %}
-        </div>
+                </div>
+                <div class = "row mt-3">
+                    <div>{{review.content|truncatechars:100}}</div>
+                </div>
+                <div class="small row mt-4 align-items-end d-flex">
+                    <div class ="col-6 text-muted my-0"> {{ author.review_set.count }} reviews </div>
+                    <div class ="like-count col-6 text-muted text-end my-0"> {{ author.total_likes }} likes received</div>
+                </div>           
+            </div> 
+            {% endfor %}
+        {% else %}
+            <p>There are no users present in Gamefolio.</p>
+        {% endif %}
     </div>
+</div>
+<br/>
+<!-- Pagination -->
+<form method="get"class="pagination-form" action="{% url 'gamefolio_app:list_profiles' %}" id="pagination-form">
+    <ul class="pagination justify-content-center">
+        {% if authors %}
+            <!-- Previous Button -->
+            {% if current_page > 1%}
+                    <li class = "page-item">    
+                        <button class="number-button page-link d-sm-none d-none d-md-block" type = "submit" value = {{ current_page|add:"-1"}}><span aria-hidden="true">&laquo;</span></button>
+                        </a>
+                    </li> 
+                {% endif %}
+                <!-- Page Numbers -->
+                {% for page in pages %}
+                    {% if page == "type" %}
+                        <li class="page-item col-1"><input id="page-search" class="number-button page-link col-12 g-0 justify-content-center" type="input" placeholder="search"></input></li>
+                    {% elif page == current_page %}  
+                        <li class="page-item"><button class="number-button page-link active" type = "submit" value = {{ page }}>{{ page }}</button></li>
+                    {% else %}
+                        <li class="page-item"><button class="number-button page-link d-sm-none d-none d-md-block" type = "submit" value = {{ page }}>{{ page }}</button></li>
+                    {% endif %}
+                {% endfor %}
+                <!-- Next Button -->
+                {% if current_page < page_count %}
+                <li class = "page-item">    
+                    <button class="number-button page-link d-sm-none d-none d-md-block" type = "submit" value = {{ current_page|add:"1"}}><span aria-hidden="true">&raquo;</span></button>
+                    </a>
+                </li>
+                {% endif %}
+            {% endif %}
+        </ul>
+    </div>
+</form>
 {% endblock %}
