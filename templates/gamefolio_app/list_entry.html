@@ -1,0 +1,9 @@
+{% load tags %}
+{% load static %}
+<div id = "list-entry" class="mb-5" style = "width: 20% !important; max-width: 20% important!;">
+    <div class="card h-100 shadow border-0"> 
+        <img class="card-img list-entry-image" src="{% get_image game "720p" %}" alt="{{ game.title }} thumbnail" />
+        <button class ="btn-dark px-2 py-1 list-entry-remove-btn d-none"  tabindex="-1" style="position: absolute!important; bottom:4%!important; left: 50%!important; transform: translateX(-50%)!important">X</button>
+    </div>
+    <input type="hidden" value = "{{game.id}}" name = "games" id = "{{game.id}}">
+</div>
