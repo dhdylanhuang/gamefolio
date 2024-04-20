@@ -206,6 +206,6 @@ window.addEventListener( "pageshow", function ( event ) {
   
   document.getElementById('contact-button').addEventListener('click', function(event) {
       event.preventDefault();
-      alert('Contact us at: 2789356h@student.gla.ac.uk or phone us at: 07909 916 436.');
+      alert('Contact us at: 2789356h@student.gla.ac.uk or phone us at: 07909 916 436');
   });
   
