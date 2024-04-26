@@ -19,7 +19,7 @@ from gamefolio_app.models import Game, Review, Author, List, ListEntry
 from django.core.paginator import Paginator
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import render_to_response
-from django.http import Http404 
+from django.http import Http404  
 
 class IndexView(View):
     def get(self, request):
